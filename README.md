@@ -1,25 +1,25 @@
 # go-vte
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/danielgatis/go-vte?style=flat-square)](https://goreportcard.com/report/github.com/danielgatis/go-vte)
-[![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/danielgatis/go-vte/master/LICENSE)
-[![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/danielgatis/go-vte)
+[![Go Report Card](https://goreportcard.com/badge/github.com/aymanbagabas/go-vte?style=flat-square)](https://goreportcard.com/report/github.com/aymanbagabas/go-vte)
+[![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/aymanbagabas/go-vte/master/LICENSE)
+[![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/aymanbagabas/go-vte)
 
 A GO version of https://github.com/alacritty/vte.
 
-The pkg `vtparse` implements a state machine that mirrors the behaviour of DEC (Digital Equipment Corporation) VT hardware terminals. The state machine was originally described by Paul Williams; more information can be found here: http://www.vt100.net/emu/dec_ansi_parser.
+The package implements a state machine that mirrors the behaviour of DEC (Digital Equipment Corporation) VT hardware terminals. The state machine was originally described by Paul Williams; more information can be found here: http://www.vt100.net/emu/dec_ansi_parser.
 
 The pkg `utf8` implements a state machine that reads UTF-8.
 
 ## Install
 
 ```bash
-go get -u github.com/danielgatis/go-vte
+go get -u github.com/aymanbagabas/go-vte
 ```
 
 And then import the package in your code:
 
 ```go
-import "github.com/danielgatis/go-vte/vtparser"
+import "github.com/aymanbagabas/go-vte"
 ```
 
 ### Example
@@ -35,7 +35,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/danielgatis/go-vte/vtparser"
+	"github.com/aymanbagabas/go-vte"
 )
 
 type dispatcher struct{}
@@ -75,17 +75,8 @@ func (p *dispatcher) EscDispatch(intermediates []byte, ignore bool, b byte) {
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 	dispatcher := &dispatcher{}
-	parser := vtparser.New(
-		dispatcher.Print,
-		dispatcher.Execute,
-		dispatcher.Put,
-		dispatcher.Unhook,
-		dispatcher.Hook,
-		dispatcher.OscDispatch,
-		dispatcher.CsiDispatch,
-		dispatcher.EscDispatch,
-	)
-	
+	parser := vtparser.New(dispatcher)
+
 	buff := make([]byte, 2048)
 
 	for {
@@ -108,7 +99,6 @@ func main() {
 
 ```
 
-
 ```
 ❯ echo -ne "Hello\nWorld" | go run main.go
 [Print] H
@@ -124,9 +114,9 @@ func main() {
 [Print] d
 ```
 
-
 ## License
 
+Copyright (c) 2023-present [Ayman Bagabas](https://github.com/aymanbagabas)
 Copyright (c) 2020-present [Daniel Gatis](https://github.com/danielgatis)
 
 Licensed under [MIT License](./LICENSE)
