@@ -1,9 +1,9 @@
-package vtparser
+package vte
 
 import (
 	"math"
 
-	"github.com/danielgatis/go-vte/utf8"
+	"github.com/aymanbagabas/go-vte/utf8"
 )
 
 // State represents a state type
@@ -16,14 +16,32 @@ const maxIntermediates = 2
 const maxOscRaw = 1024
 const maxParams = 16
 
-type printCallback func(char rune)
-type execCallback func(b byte)
-type putCallback func(b byte)
-type unhookCallback func()
-type hookCallback func(params []int64, intermediates []byte, ignore bool, r rune)
-type oscCallback func(params [][]byte, bellTerminated bool)
-type csiCallback func(params []int64, intermediates []byte, ignore bool, r rune)
-type escCallback func(intermediates []byte, ignore bool, b byte)
+// Performer is an interface for parsing.
+type Performer interface {
+	// Print is called when a print action is performed.
+	Print(r rune)
+
+	// Execute is called when an execute action is performed.
+	Execute(b byte)
+
+	// Put is called when a put action is performed.
+	Put(b byte)
+
+	// Unhook is called when an unhook action is performed.
+	Unhook()
+
+	// Hook is called when a hook action is performed.
+	Hook(params []int64, intermediates []byte, ignore bool, r rune)
+
+	// OscDispatch is called when an osc dispatch action is performed.
+	OscDispatch(params [][]byte, bellTerminated bool)
+
+	// CsiDispatch is called when a csi dispatch action is performed.
+	CsiDispatch(params []int64, intermediates []byte, ignore bool, r rune)
+
+	// EscDispatch is called when an esc dispatch action is performed.
+	EscDispatch(intermediates []byte, ignore bool, b byte)
+}
 
 // Parser represents a state machine.
 type Parser struct {
@@ -39,38 +57,64 @@ type Parser struct {
 	ignoring        bool
 	utf8Parser      *utf8.Parser
 
-	prtcb printCallback
-	execb execCallback
-	putcb putCallback
-	uhocb unhookCallback
-	hokcb hookCallback
-	osccb oscCallback
-	csicb csiCallback
-	esccb escCallback
+	performer Performer
+}
+
+func (p *Parser) prtcb(char rune) {
+	if p.performer != nil {
+		p.performer.Print(char)
+	}
+}
+
+func (p *Parser) execb(b byte) {
+	if p.performer != nil {
+		p.performer.Execute(b)
+	}
+}
+
+func (p *Parser) putcb(b byte) {
+	if p.performer != nil {
+		p.performer.Put(b)
+	}
+}
+
+func (p *Parser) uhocb() {
+	if p.performer != nil {
+		p.performer.Unhook()
+	}
+}
+
+func (p *Parser) hokcb(params []int64, intermediates []byte, ignore bool, r rune) {
+	if p.performer != nil {
+		p.performer.Hook(params, intermediates, ignore, r)
+	}
+}
+
+func (p *Parser) osccb(params [][]byte, bellTerminated bool) {
+	if p.performer != nil {
+		p.performer.OscDispatch(params, bellTerminated)
+	}
+}
+
+func (p *Parser) csicb(params []int64, intermediates []byte, ignore bool, r rune) {
+	if p.performer != nil {
+		p.performer.CsiDispatch(params, intermediates, ignore, r)
+	}
+}
+
+func (p *Parser) esccb(intermediates []byte, ignore bool, b byte) {
+	if p.performer != nil {
+		p.performer.EscDispatch(intermediates, ignore, b)
+	}
 }
 
 // New returns a new parser.
 func New(
-	prtcb printCallback,
-	execb execCallback,
-	putcb putCallback,
-	uhocb unhookCallback,
-	hokcb hookCallback,
-	osccb oscCallback,
-	csicb csiCallback,
-	esccb escCallback,
+	performer Performer,
 ) *Parser {
 	p := &Parser{
-		state: groundState,
-
-		prtcb: prtcb,
-		execb: execb,
-		putcb: putcb,
-		uhocb: uhocb,
-		hokcb: hokcb,
-		osccb: osccb,
-		csicb: csicb,
-		esccb: esccb,
+		state:     groundState,
+		performer: performer,
 	}
 
 	p.utf8Parser = utf8.New(

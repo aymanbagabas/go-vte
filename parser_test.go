@@ -1,4 +1,4 @@
-package vtparser
+package vte
 
 import (
 	"io/ioutil"
@@ -36,16 +36,7 @@ func BenchmarkNext(bm *testing.B) {
 
 	bm.ResetTimer()
 	dispatcher := &benchDispatcher{}
-	parser := New(
-		dispatcher.Print,
-		dispatcher.Execute,
-		dispatcher.Put,
-		dispatcher.Unhook,
-		dispatcher.Hook,
-		dispatcher.OscDispatch,
-		dispatcher.CsiDispatch,
-		dispatcher.EscDispatch,
-	)
+	parser := New(dispatcher)
 
 	for _, b := range bytes {
 		parser.Advance(b)

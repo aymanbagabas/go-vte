@@ -1,4 +1,4 @@
-package vtparser
+package vte
 
 import (
 	"testing"
@@ -43,16 +43,7 @@ func (p *dcsDispatcher) EscDispatch(intermediates []byte, ignore bool, b byte) {
 
 func TestDcsMaxParams(t *testing.T) {
 	dispatcher := &dcsDispatcher{}
-	parser := New(
-		dispatcher.Print,
-		dispatcher.Execute,
-		dispatcher.Put,
-		dispatcher.Unhook,
-		dispatcher.Hook,
-		dispatcher.OscDispatch,
-		dispatcher.CsiDispatch,
-		dispatcher.EscDispatch,
-	)
+	parser := New(dispatcher)
 
 	for _, b := range []byte("\x1bP1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;p\x1b") {
 		parser.Advance(b)
@@ -69,16 +60,7 @@ func TestDcsMaxParams(t *testing.T) {
 
 func TestDcsReset(t *testing.T) {
 	dispatcher := &dcsDispatcher{}
-	parser := New(
-		dispatcher.Print,
-		dispatcher.Execute,
-		dispatcher.Put,
-		dispatcher.Unhook,
-		dispatcher.Hook,
-		dispatcher.OscDispatch,
-		dispatcher.CsiDispatch,
-		dispatcher.EscDispatch,
-	)
+	parser := New(dispatcher)
 
 	for _, b := range []byte("\x1b[3;1\x1bP1$tx\x9c") {
 		parser.Advance(b)
@@ -94,16 +76,7 @@ func TestDcsParse(t *testing.T) {
 	bytes := []byte{0x1b, 0x50, 0x30, 0x3b, 0x31, 0x7c, 0x31, 0x37, 0x2f, 0x61, 0x62, 0x9c}
 
 	dispatcher := &dcsDispatcher{}
-	parser := New(
-		dispatcher.Print,
-		dispatcher.Execute,
-		dispatcher.Put,
-		dispatcher.Unhook,
-		dispatcher.Hook,
-		dispatcher.OscDispatch,
-		dispatcher.CsiDispatch,
-		dispatcher.EscDispatch,
-	)
+	parser := New(dispatcher)
 
 	for _, b := range bytes {
 		parser.Advance(b)

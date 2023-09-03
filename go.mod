@@ -1,4 +1,4 @@
-module github.com/danielgatis/go-vte
+module github.com/aymanbagabas/go-vte
 
 go 1.14
 

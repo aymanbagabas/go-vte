@@ -1,4 +1,4 @@
-package vtparser
+package vte
 
 import (
 	"testing"
@@ -36,16 +36,7 @@ func (p *ecsDispatcher) EscDispatch(intermediates []byte, ignore bool, b byte) {
 
 func TestEscReset(t *testing.T) {
 	dispatcher := &ecsDispatcher{}
-	parser := New(
-		dispatcher.Print,
-		dispatcher.Execute,
-		dispatcher.Put,
-		dispatcher.Unhook,
-		dispatcher.Hook,
-		dispatcher.OscDispatch,
-		dispatcher.CsiDispatch,
-		dispatcher.EscDispatch,
-	)
+	parser := New(dispatcher)
 
 	for _, b := range []byte("\x1b[3;1\x1b(A") {
 		parser.Advance(b)

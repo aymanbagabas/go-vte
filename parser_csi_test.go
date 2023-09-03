@@ -1,4 +1,4 @@
-package vtparser
+package vte
 
 import (
 	"math"
@@ -45,16 +45,7 @@ func TestCsiMaxParams(t *testing.T) {
 	strParams += "p"
 
 	dispatcher := &csiDispatcher{}
-	parser := New(
-		dispatcher.Print,
-		dispatcher.Execute,
-		dispatcher.Put,
-		dispatcher.Unhook,
-		dispatcher.Hook,
-		dispatcher.OscDispatch,
-		dispatcher.CsiDispatch,
-		dispatcher.EscDispatch,
-	)
+	parser := New(dispatcher)
 
 	for _, b := range []byte(strParams) {
 		parser.Advance(b)
@@ -75,16 +66,7 @@ func TestCsiParamsIgnoreLong(t *testing.T) {
 	strParams += "p"
 
 	dispatcher := &csiDispatcher{}
-	parser := New(
-		dispatcher.Print,
-		dispatcher.Execute,
-		dispatcher.Put,
-		dispatcher.Unhook,
-		dispatcher.Hook,
-		dispatcher.OscDispatch,
-		dispatcher.CsiDispatch,
-		dispatcher.EscDispatch,
-	)
+	parser := New(dispatcher)
 
 	for _, b := range []byte(strParams) {
 		parser.Advance(b)
@@ -97,16 +79,7 @@ func TestCsiParamsIgnoreLong(t *testing.T) {
 
 func TestCsiParamsTrailingSemicolon(t *testing.T) {
 	dispatcher := &csiDispatcher{}
-	parser := New(
-		dispatcher.Print,
-		dispatcher.Execute,
-		dispatcher.Put,
-		dispatcher.Unhook,
-		dispatcher.Hook,
-		dispatcher.OscDispatch,
-		dispatcher.CsiDispatch,
-		dispatcher.EscDispatch,
-	)
+	parser := New(dispatcher)
 
 	for _, b := range []byte("\x1b[4;m") {
 		parser.Advance(b)
@@ -117,16 +90,7 @@ func TestCsiParamsTrailingSemicolon(t *testing.T) {
 
 func TestCsiSemiSetUnderline(t *testing.T) {
 	dispatcher := &csiDispatcher{}
-	parser := New(
-		dispatcher.Print,
-		dispatcher.Execute,
-		dispatcher.Put,
-		dispatcher.Unhook,
-		dispatcher.Hook,
-		dispatcher.OscDispatch,
-		dispatcher.CsiDispatch,
-		dispatcher.EscDispatch,
-	)
+	parser := New(dispatcher)
 
 	for _, b := range []byte("\x1b[;4m") {
 		parser.Advance(b)
@@ -137,16 +101,7 @@ func TestCsiSemiSetUnderline(t *testing.T) {
 
 func TestLongCsiParam(t *testing.T) {
 	dispatcher := &csiDispatcher{}
-	parser := New(
-		dispatcher.Print,
-		dispatcher.Execute,
-		dispatcher.Put,
-		dispatcher.Unhook,
-		dispatcher.Hook,
-		dispatcher.OscDispatch,
-		dispatcher.CsiDispatch,
-		dispatcher.EscDispatch,
-	)
+	parser := New(dispatcher)
 
 	for _, b := range []byte("\x1b[9223372036854775808m") {
 		parser.Advance(b)
@@ -157,16 +112,7 @@ func TestLongCsiParam(t *testing.T) {
 
 func TestLongCsiReset(t *testing.T) {
 	dispatcher := &csiDispatcher{}
-	parser := New(
-		dispatcher.Print,
-		dispatcher.Execute,
-		dispatcher.Put,
-		dispatcher.Unhook,
-		dispatcher.Hook,
-		dispatcher.OscDispatch,
-		dispatcher.CsiDispatch,
-		dispatcher.EscDispatch,
-	)
+	parser := New(dispatcher)
 
 	for _, b := range []byte("\x1b[3;1\x1b[?1049h") {
 		parser.Advance(b)

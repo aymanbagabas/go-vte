@@ -1,15 +1,12 @@
 package main
 
-//go:generate ruby ./utf8/_tablegen.rb
-//go:generate ruby ./vtparser/_tablegen.rb
-
 import (
 	"bufio"
 	"fmt"
 	"io"
 	"os"
 
-	"github.com/danielgatis/go-vte/vtparser"
+	"github.com/aymanbagabas/go-vte"
 )
 
 type dispatcher struct{}
@@ -49,16 +46,7 @@ func (p *dispatcher) EscDispatch(intermediates []byte, ignore bool, b byte) {
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 	dispatcher := &dispatcher{}
-	parser := vtparser.New(
-		dispatcher.Print,
-		dispatcher.Execute,
-		dispatcher.Put,
-		dispatcher.Unhook,
-		dispatcher.Hook,
-		dispatcher.OscDispatch,
-		dispatcher.CsiDispatch,
-		dispatcher.EscDispatch,
-	)
+	parser := vte.New(dispatcher)
 
 	buff := make([]byte, 2048)
 
