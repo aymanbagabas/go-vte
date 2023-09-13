@@ -749,3 +749,252 @@ func parseStyleSequence(params [][]uint16) Style {
 
 	return s
 }
+
+// IsStyleReset returns true if the sequence is a reset SGR sequence.
+func IsStyleReset(s Style) bool {
+	if len(s.attrs) == 0 {
+		return true
+	}
+	for _, attr := range s.attrs {
+		switch attr[0] {
+		case ResetStyleAttr:
+			return true
+		}
+	}
+	return false
+}
+
+// IsStyleBold returns true if the sequence is a bold SGR sequence.
+func IsStyleBold(s Style) bool {
+	var isBold bool
+	for _, attr := range s.attrs {
+		switch attr[0] {
+		case ResetStyleAttr:
+			isBold = false
+		case BoldStyleAttr:
+			isBold = true
+		case NoBoldStyleAttr, NormalStyleAttr:
+			isBold = false
+		}
+	}
+	return isBold
+}
+
+// IsStyleFaint returns true if the sequence is a faint SGR sequence.
+func IsStyleFaint(s Style) bool {
+	var isFaint bool
+	for _, attr := range s.attrs {
+		switch attr[0] {
+		case ResetStyleAttr:
+			isFaint = false
+		case FaintStyleAttr:
+			isFaint = true
+		case NormalStyleAttr:
+			isFaint = false
+		}
+	}
+	return isFaint
+}
+
+// IsStyleItalic returns true if the sequence is an italic SGR sequence.
+func IsStyleItalic(s Style) bool {
+	var isItalic bool
+	for _, attr := range s.attrs {
+		switch attr[0] {
+		case ResetStyleAttr:
+			isItalic = false
+		case ItalicStyleAttr:
+			isItalic = true
+		case NoItalicStyleAttr:
+			isItalic = false
+		}
+	}
+	return isItalic
+}
+
+// IsStyleUnderline returns true if the sequence is an underline SGR sequence.
+func IsStyleUnderline(s Style) bool {
+	var isUnderline bool
+	for _, attr := range s.attrs {
+		switch attr[0] {
+		case ResetStyleAttr:
+			isUnderline = false
+		case UnderlineStyleAttr:
+			if len(attr) > 1 {
+				switch attr[1] {
+				case NoUnderlineStyleStyleAttr:
+					isUnderline = false
+				default:
+					isUnderline = true
+				}
+			} else {
+				isUnderline = true
+			}
+		case NoUnderlineStyleAttr:
+			isUnderline = false
+		}
+	}
+	return isUnderline
+}
+
+// IsStyleSlowBlink returns true if the sequence is a slow blink SGR sequence.
+func IsStyleSlowBlink(s Style) bool {
+	var isSlowBlink bool
+	for _, attr := range s.attrs {
+		switch attr[0] {
+		case ResetStyleAttr:
+			isSlowBlink = false
+		case SlowBlinkStyleAttr:
+			isSlowBlink = true
+		case NoBlinkStyleAttr:
+			isSlowBlink = false
+		}
+	}
+	return isSlowBlink
+}
+
+// IsStyleRapidBlink returns true if the sequence is a rapid blink SGR sequence.
+func IsStyleRapidBlink(s Style) bool {
+	var isRapidBlink bool
+	for _, attr := range s.attrs {
+		switch attr[0] {
+		case ResetStyleAttr:
+			isRapidBlink = false
+		case RapidBlinkStyleAttr:
+			isRapidBlink = true
+		case NoBlinkStyleAttr:
+			isRapidBlink = false
+		}
+	}
+	return isRapidBlink
+}
+
+// IsStyleInvert returns true if the sequence is an invert SGR sequence.
+func IsStyleInvert(s Style) bool {
+	var isInvert bool
+	for _, attr := range s.attrs {
+		switch attr[0] {
+		case ResetStyleAttr:
+			isInvert = false
+		case InvertStyleAttr:
+			isInvert = true
+		case NoInvertStyleAttr:
+			isInvert = false
+		}
+	}
+	return isInvert
+}
+
+// IsStyleConceal returns true if the sequence is a conceal SGR sequence.
+func IsStyleConceal(s Style) bool {
+	var isConceal bool
+	for _, attr := range s.attrs {
+		switch attr[0] {
+		case ResetStyleAttr:
+			isConceal = false
+		case ConcealStyleAttr:
+			isConceal = true
+		case RevealStyleAttr:
+			isConceal = false
+		}
+	}
+	return isConceal
+}
+
+// IsStyleStrikethrough returns true if the sequence is a strikethrough SGR sequence.
+func IsStyleStrikethrough(s Style) bool {
+	var isStrikethrough bool
+	for _, attr := range s.attrs {
+		switch attr[0] {
+		case ResetStyleAttr:
+			isStrikethrough = false
+		case StrikethroughStyleAttr:
+			isStrikethrough = true
+		case NoStrikethroughStyleAttr:
+			isStrikethrough = false
+		}
+	}
+	return isStrikethrough
+}
+
+// StyleForegroundColor returns the foreground color of the sequence.
+// If the sequence does not have a foreground color, nil is returned.
+func StyleForegroundColor(s Style) Color {
+	var fg Color
+	for i := 0; i < len(s.attrs); i++ {
+		attr := s.attrs[i]
+		switch attr[0] {
+		case ResetStyleAttr:
+			fg = nil
+		case BlackForegroundStyleAttr, RedForegroundStyleAttr, GreenForegroundStyleAttr,
+			YellowForegroundStyleAttr, BlueForegroundStyleAttr, MagentaForegroundStyleAttr,
+			CyanForegroundStyleAttr, WhiteForegroundStyleAttr: // 30-37
+			fg = BasicColor(attr[0] - 30)
+		case ForegroundStyleAttr: // 38
+			c, add, ok := parseStyleColorFromAttrs(i, s.attrs)
+			if ok {
+				fg = c
+				i += add
+			}
+		case DefaultForegroundStyleAttr: // 39
+			fg = nil
+		case BrightBlackForegroundStyleAttr, BrightRedForegroundStyleAttr, BrightGreenForegroundStyleAttr,
+			BrightYellowForegroundStyleAttr, BrightBlueForegroundStyleAttr, BrightMagentaForegroundStyleAttr,
+			BrightCyanForegroundStyleAttr, BrightWhiteForegroundStyleAttr: // 90-97
+			fg = BasicColor(attr[0] - 90 + 8)
+		}
+	}
+	return fg
+}
+
+// StyleBackgroundColor returns the background color of the sequence.
+// If the sequence does not have a background color, nil is returned.
+func StyleBackgroundColor(s Style) Color {
+	var bg Color
+	for i := 0; i < len(s.attrs); i++ {
+		attr := s.attrs[i]
+		switch attr[0] {
+		case ResetStyleAttr:
+			bg = nil
+		case BlackBackgroundStyleAttr, RedBackgroundStyleAttr, GreenBackgroundStyleAttr,
+			YellowBackgroundStyleAttr, BlueBackgroundStyleAttr, MagentaBackgroundStyleAttr,
+			CyanBackgroundStyleAttr, WhiteBackgroundStyleAttr: // 40-47
+			bg = BasicColor(attr[0] - 40)
+		case BackgroundStyleAttr: // 48
+			c, add, ok := parseStyleColorFromAttrs(i, s.attrs)
+			if ok {
+				bg = c
+				i += add
+			}
+		case DefaultBackgroundStyleAttr: // 49
+			bg = nil
+		case BrightBlackBackgroundStyleAttr, BrightRedBackgroundStyleAttr, BrightGreenBackgroundStyleAttr,
+			BrightYellowBackgroundStyleAttr, BrightBlueBackgroundStyleAttr, BrightMagentaBackgroundStyleAttr,
+			BrightCyanBackgroundStyleAttr, BrightWhiteBackgroundStyleAttr: // 100-107
+			bg = BasicColor(attr[0] - 100 + 8)
+		}
+	}
+	return bg
+}
+
+// StyleUnderlineColor returns the underline color of the sequence.
+// If the sequence does not have an underline color, nil is returned.
+func StyleUnderlineColor(s Style) Color {
+	var ul Color
+	for i := 0; i < len(s.attrs); i++ {
+		attr := s.attrs[i]
+		switch attr[0] {
+		case ResetStyleAttr:
+			ul = nil
+		case UnderlineColorAttr: // 58
+			c, add, ok := parseStyleColorFromAttrs(i, s.attrs)
+			if ok {
+				ul = c
+				i += add
+			}
+		case DefaultUnderlineColorAttr: // 59
+			ul = nil
+		}
+	}
+	return ul
+}
